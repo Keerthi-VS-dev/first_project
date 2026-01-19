@@ -1,54 +1,44 @@
+
+from datetime import date, datetime
+from decimal import Decimal
+from enum import Enum as PyEnum
 from pydantic import BaseModel
-from typing import Optional, List
-from datetime import datetime, date
+from typing import Optional
 
-# ---------- Base Schemas ----------
-class AttendanceBase(BaseModel):
+
+# Optional: Define the status as a Python Enum for Pydantic
+class AttendanceStatus(str, PyEnum):
+    PRESENT = "PRESENT"
+    ABSENT = "ABSENT"
+    HALF_DAY = "HALF_DAY"
+
+
+# Schema for creating a new attendance record
+class AttendanceCreate(BaseModel):
+    employee_id: int
     date: date
-    status: Optional[str] = "absent"
+    check_in_time: Optional[datetime] = None
+    check_out_time: Optional[datetime] = None
+    worked_hours: Optional[Decimal] = None
+    status: AttendanceStatus
 
-class AttendanceCreate(AttendanceBase):
-    employee_id: str
-
+# Schema for updating an attendance record
 class AttendanceUpdate(BaseModel):
-    check_in: Optional[datetime] = None
-    check_out: Optional[datetime] = None
-    status: Optional[str] = None
+    check_in_time: Optional[datetime] = None
+    check_out_time: Optional[datetime] = None
+    worked_hours: Optional[Decimal] = None
+    status: Optional[AttendanceStatus] = None
 
-# ---------- Response Schemas ----------
+# Schema for reading attendance (response)
 class AttendanceResponse(BaseModel):
     id: int
     employee_id: int
-    employee_name: str
     date: date
-    status: Optional[str] = None
-    check_in: Optional[datetime] = None
-    check_out: Optional[datetime] = None
-    total_hours: float
-    created_at: datetime                 # required
-    updated_at: Optional[datetime] = None
+    check_in_time: Optional[datetime] = None
+    check_out_time: Optional[datetime] = None
+    worked_hours: Optional[Decimal] = None
+    status: AttendanceStatus
+    created_at: datetime
 
     class Config:
         orm_mode = True
-
-
-class AttendanceList(BaseModel):
-    attendance: List[AttendanceResponse]
-    total: int
-
-# ---------- Check-in / Check-out ----------
-class CheckInOut(BaseModel):
-    employee_id : str
-
-class CheckInOutResponse(BaseModel):
-    message: str
-    attendance_id: int
-    check_in: Optional[datetime] = None
-    check_out: Optional[datetime] = None
-
-# ---------- Today Attendance ----------
-class TodayAttendanceResponse(BaseModel):
-    date: date
-    status: str
-    check_in: Optional[datetime] = None
-    check_out: Optional[datetime] = None
